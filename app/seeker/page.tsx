@@ -10,6 +10,29 @@ export default function SeekerPage() {
   const [sending, setSending] = useState(false)
   const [shelters, setShelters] = useState<any[]>([])
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null)
+  const [myBottles, setMyBottles] = useState<any[]>([])
+
+  // 获取我的漂流瓶及回复
+  const fetchMyBottles = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data } = await supabase
+      .from('bottles')
+      .select(`
+        *,
+        bottle_responses (
+          id,
+          contact_info_shared,
+          message,
+          created_at
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+    
+    if (data) setMyBottles(data)
+  }
 
   // 1. 发送漂流瓶逻辑
   const sendBottle = async () => {
@@ -19,24 +42,50 @@ export default function SeekerPage() {
     // 获取当前用户 (实际项目中需要处理未登录情况)
     const { data: { user } } = await supabase.auth.getUser()
     
+    if (!user) {
+      alert("请先登录后再发送求助信息")
+      setSending(false)
+      return
+    }
+
     const { error } = await supabase.from('bottles').insert([
       { 
         content: message,
-        user_id: user?.id // 如果未登录，这里可能需要允许匿名或提示登录
+        user_id: user.id 
       }
     ])
 
     if (error) {
+      // 自动修复逻辑：如果是因为缺少 profile 导致的外键错误
+      if (error.message.includes('foreign key constraint')) {
+        // 尝试补充创建 profile
+        const { error: profileError } = await supabase.from('profiles').insert([{ id: user.id }])
+        
+        if (!profileError) {
+          // 修复成功，重试发送
+          const { error: retryError } = await supabase.from('bottles').insert([{ content: message, user_id: user.id }])
+          if (!retryError) {
+            alert('信息已发出。')
+            setMessage('')
+            setSending(false)
+            fetchMyBottles()
+            return
+          }
+        }
+      }
       alert('发送失败: ' + error.message)
     } else {
       alert('漂流瓶已发出，请留意收件箱或通知。')
       setMessage('')
+      fetchMyBottles()
     }
     setSending(false)
   }
 
   // 2. 获取位置并查找附近庇护所
   useEffect(() => {
+    fetchMyBottles()
+
     // 提取获取庇护所数据的逻辑，方便复用
     const fetchShelters = async (lat: number, lng: number) => {
       // 从 Supabase 获取所有庇护所
@@ -93,6 +142,38 @@ export default function SeekerPage() {
         >
           {sending ? '发送中...' : '发送消息至房间'}
         </button>
+      </section>
+
+      {/* 模块 C: 我的求助信箱 (显示回复) */}
+      <section className="bg-white p-4 rounded-xl shadow-sm mb-6">
+        <h2 className="text-lg font-semibold mb-4 text-slate-800">📬 我的求助信箱</h2>
+        {myBottles.length === 0 ? (
+          <p className="text-slate-400 text-sm">暂无求助记录</p>
+        ) : (
+          <div className="space-y-4">
+            {myBottles.map(bottle => (
+              <div key={bottle.id} className="border-b border-slate-100 pb-4 last:border-0">
+                <p className="text-slate-600 mb-2 text-sm bg-slate-50 p-2 rounded">"{bottle.content}"</p>
+                
+                {bottle.bottle_responses && bottle.bottle_responses.length > 0 ? (
+                  <div className="space-y-2 mt-2 pl-4 border-l-2 border-blue-200">
+                    {bottle.bottle_responses.map((res: any) => (
+                      <div key={res.id} className="text-sm">
+                        <p className="text-green-600 font-bold">志愿者回应:</p>
+                        <p className="text-slate-800">{res.message}</p>
+                        <p className="text-blue-600 font-mono mt-1 select-all bg-blue-50 inline-block px-2 py-1 rounded">
+                          联系方式: {res.contact_info_shared}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 mt-1">等待志愿者回应...</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 模块 B: 附近庇护所 */}

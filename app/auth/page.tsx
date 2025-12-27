@@ -27,11 +27,17 @@ export default function AuthPage() {
         router.push('/')
         router.refresh()
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         })
         if (error) throw error
+
+        // 注册成功后，确保在 profiles 表中有对应记录 (解决外键依赖问题)
+        if (data.user) {
+          await supabase.from('profiles').insert([{ id: data.user.id }])
+        }
+
         alert('注册成功！请检查邮箱验证或直接登录')
         setIsLogin(true)
       }

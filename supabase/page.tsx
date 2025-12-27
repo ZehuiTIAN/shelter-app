@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../utils/supabase.js'
+import { supabase } from '../utils/supabase'
 
 export default function AuthPage() {
   const router = useRouter()

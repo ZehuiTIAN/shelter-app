@@ -87,7 +87,7 @@ export default function ProviderPage() {
           onClick={() => setActiveTab('mental')}
           className={`flex-1 py-3 rounded-lg font-bold ${activeTab === 'mental' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'}`}
         >
-          🧠 精神支持
+          🧠 精神庇护
         </button>
         <button 
           onClick={() => setActiveTab('physical')}

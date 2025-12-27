@@ -73,7 +73,7 @@ export default function AuthPage() {
     <main className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <h1 className="text-2xl font-bold text-center mb-6 text-slate-800">
-          {isLogin ? '欢迎回来' : '加入 Shelter Guard'}
+          {isLogin ? '欢迎回来' : '加入 Shelter庇护所'}
         </h1>
 
         <form onSubmit={handleAuth} className="space-y-4">
@@ -122,7 +122,7 @@ export default function AuthPage() {
                     value={subRole}
                     onChange={(e) => setSubRole(e.target.value as any)}
                   >
-                    <option value="mental">🧠 精神支持 (漂流瓶)</option>
+                    <option value="mental">🧠 精神庇护 (漂流瓶)</option>
                     <option value="physical">🏠 物理庇护 (提供场所)</option>
                   </select>
                 </div>

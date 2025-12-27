@@ -30,9 +30,9 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-slate-50">
       
-      <h1 className="text-4xl font-bold mb-8 text-slate-800">Shelter Guard</h1>
+      <h1 className="text-4xl font-bold mb-8 text-slate-800">Shelter庇护所</h1>
       <p className="mb-12 text-slate-500 text-center max-w-md">
-        安全、隐秘的家暴庇护网络。您的位置只有在发出求助时才会被共享。
+        安全、隐秘的暴力庇护网络。您的位置只有在发出求助时才会被共享。
       </p>
 
       {!user ? (
@@ -56,7 +56,7 @@ export default function Home() {
             href="/seeker"
             className="h-32 rounded-xl bg-red-600 hover:bg-red-700 text-white text-2xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2"
           >
-            <span>🆘 我需要帮助</span>
+            <span>🆘 我需要庇护</span>
             <span className="text-sm font-normal opacity-90">寻找附近的精神/物理庇护</span>
           </Link>
 
@@ -65,7 +65,7 @@ export default function Home() {
             href="/provider"
             className="h-20 rounded-xl bg-white border-2 border-slate-200 hover:border-slate-400 text-slate-700 text-xl font-bold shadow-sm transition-all flex items-center justify-center"
           >
-            🤝 我想提供帮助
+            🤝 我想提供庇护
           </Link>
 
           <button onClick={handleLogout} className="text-slate-400 text-sm hover:text-slate-600 mt-4">

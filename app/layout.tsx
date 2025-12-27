@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Shelter Guard",
-  description: "安全、隐秘的家暴庇护网络。您的位置只有在发出求助时才会被共享。",
+  title: "Shelter庇护所",
+  description: "安全、隐秘的暴力庇护网络。您的位置只有在发出求助时才会被共享。",
 };
 
 export default function RootLayout({

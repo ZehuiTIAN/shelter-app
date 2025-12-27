@@ -5,7 +5,6 @@ import { supabase } from '../../utils/supabase.js'
 
 import BackToHome from '../../components/BackToHome'
 
-
 export default function SeekerPage() {
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -38,25 +37,35 @@ export default function SeekerPage() {
 
   // 2. 获取位置并查找附近庇护所
   useEffect(() => {
+    // 提取获取庇护所数据的逻辑，方便复用
+    const fetchShelters = async (lat: number, lng: number) => {
+      // 从 Supabase 获取所有庇护所
+      const { data } = await supabase.from('shelters').select('*')
+      
+      if (data) {
+        // 计算距离并排序
+        const sorted = data.map(shelter => {
+          const dist = getDistanceFromLatLonInKm(lat, lng, shelter.latitude, shelter.longitude)
+          return { ...shelter, distance: dist }
+        }).sort((a, b) => a.distance - b.distance)
+        
+        setShelters(sorted)
+      }
+    }
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords
         setLocation({ lat: latitude, lng: longitude })
-
-        // 从 Supabase 获取所有庇护所 (生产环境应使用 PostGIS 进行数据库端筛选)
-        const { data } = await supabase.from('shelters').select('*')
+        await fetchShelters(latitude, longitude)
+      }, async (err) => {
+        alert("无法获取您的当前位置，将显示默认位置（北京）附近的庇护所。")
         
-        if (data) {
-          // 简单的客户端距离计算 (单位: km)
-          const sorted = data.map(shelter => {
-            const dist = getDistanceFromLatLonInKm(latitude, longitude, shelter.latitude, shelter.longitude)
-            return { ...shelter, distance: dist }
-          }).sort((a, b) => a.distance - b.distance)
-          
-          setShelters(sorted)
-        }
-      }, (err) => {
-        console.error("无法获取位置", err)
+        // 设置默认位置 (例如: 北京天安门)
+        const defaultLat = 39.9042
+        const defaultLng = 116.4074
+        setLocation({ lat: defaultLat, lng: defaultLng })
+        await fetchShelters(defaultLat, defaultLng)
       })
     }
   }, [])
@@ -68,8 +77,8 @@ export default function SeekerPage() {
 
       {/* 模块 A: 漂流瓶 */}
       <section className="bg-white p-4 rounded-xl shadow-sm mb-6">
-        <h2 className="text-lg font-semibold mb-2 text-blue-600">🌊 发送求助漂流瓶</h2>
-        <p className="text-sm text-slate-500 mb-4">写下你的困境，会有提供精神支持的志愿者看到并联系你。</p>
+        <h2 className="text-lg font-semibold mb-2 text-blue-600">🌊 发送求助庇护消息</h2>
+        <p className="text-sm text-slate-500 mb-4">写下你的困境，会有能提供庇护的志愿者看到并联系你。</p>
         <textarea 
           className="w-full p-3 border border-slate-200 rounded-lg mb-3 text-slate-800"
           rows={4}
@@ -82,7 +91,7 @@ export default function SeekerPage() {
           disabled={sending}
           className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold disabled:opacity-50"
         >
-          {sending ? '发送中...' : '扔出漂流瓶'}
+          {sending ? '发送中...' : '发送消息至房间'}
         </button>
       </section>
 

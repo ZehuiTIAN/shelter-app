@@ -54,7 +54,7 @@ export default function AuthPage() {
 
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
         <h2 className="text-2xl font-bold mb-6 text-center text-slate-800">
-          {isLogin ? '登录 Shelter Guard' : '注册新账号'}
+          {isLogin ? '登录 Shelter庇护所' : '注册新账号'}
         </h2>
         
         <form onSubmit={handleAuth} className="space-y-4">

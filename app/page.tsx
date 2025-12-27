@@ -1,6 +1,7 @@
 'use client' // 必须加这行，因为我们要用useEffect
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '../utils/supabase.js' // 确保这个路径对应你刚才建文件的位置
 
 export default function Home() {
@@ -38,21 +39,21 @@ export default function Home() {
 
       <div className="grid grid-cols-1 gap-6 w-full max-w-md">
         {/* 求助者按钮 */}
-        <button 
+        <Link 
+          href="/seeker"
           className="h-32 rounded-xl bg-red-600 hover:bg-red-700 text-white text-2xl font-bold shadow-lg transition-all flex flex-col items-center justify-center gap-2"
-          onClick={() => alert("即将跳转到求助者注册...")}
         >
           <span>🆘 我需要帮助</span>
           <span className="text-sm font-normal opacity-90">寻找附近的精神/物理庇护</span>
-        </button>
+        </Link>
 
         {/* 志愿者按钮 */}
-        <button 
-          className="h-20 rounded-xl bg-white border-2 border-slate-200 hover:border-slate-400 text-slate-700 text-xl font-bold shadow-sm transition-all"
-          onClick={() => alert("即将跳转到志愿者注册...")}
+        <Link 
+          href="/provider"
+          className="h-20 rounded-xl bg-white border-2 border-slate-200 hover:border-slate-400 text-slate-700 text-xl font-bold shadow-sm transition-all flex items-center justify-center"
         >
           🤝 我想提供帮助
-        </button>
+        </Link>
       </div>
 
       {/* 紧急逃生按钮 (演示用) */}

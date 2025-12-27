@@ -1,7 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { supabase } from '../../utils/supabase.js'
+
+// 动态导入地图组件，禁用 SSR (服务端渲染)
+const MapPicker = dynamic(() => import('../../components/MapPicker'), { 
+  ssr: false,
+  loading: () => <div className="h-64 w-full bg-slate-100 animate-pulse rounded-lg flex items-center justify-center text-slate-400">正在加载地图...</div>
+})
 
 export default function ProviderPage() {
   const [activeTab, setActiveTab] = useState<'mental' | 'physical'>('mental')
@@ -9,6 +16,7 @@ export default function ProviderPage() {
   
   // 物理庇护表单状态
   const [shelterForm, setShelterForm] = useState({ name: '', address: '' })
+  const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null)
 
   // 加载漂流瓶
   useEffect(() => {
@@ -48,24 +56,25 @@ export default function ProviderPage() {
 
   // 注册物理庇护点
   const registerShelter = async () => {
-    // 简单模拟：使用浏览器当前位置作为店铺位置
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords
-      const { data: { user } } = await supabase.auth.getUser()
+    if (!selectedLocation) {
+      alert("请先在地图上点击选择您的庇护点位置")
+      return
+    }
 
-      const { error } = await supabase.from('shelters').insert([
-        {
-          provider_id: user?.id,
-          name: shelterForm.name,
-          address: shelterForm.address,
-          latitude,
-          longitude
-        }
-      ])
+    const { data: { user } } = await supabase.auth.getUser()
 
-      if (!error) alert("庇护点注册成功！求助者现在可以看到您的位置。")
-      else alert("注册失败: " + error.message)
-    }, () => alert("需要获取位置权限才能注册庇护点"))
+    const { error } = await supabase.from('shelters').insert([
+      {
+        provider_id: user?.id,
+        name: shelterForm.name,
+        address: shelterForm.address,
+        latitude: selectedLocation.lat,
+        longitude: selectedLocation.lng
+      }
+    ])
+
+    if (!error) alert("庇护点注册成功！求助者现在可以看到您的位置。")
+    else alert("注册失败: " + error.message)
   }
 
   return (
@@ -106,7 +115,7 @@ export default function ProviderPage() {
       ) : (
         <div className="bg-white p-6 rounded-xl shadow-sm">
           <h2 className="text-xl font-bold mb-4 text-slate-800">注册庇护点</h2>
-          <p className="text-sm text-slate-500 mb-4">我们将使用您当前的 GPS 位置作为庇护点坐标。</p>
+          <p className="text-sm text-slate-500 mb-4">请填写信息并在下方地图中点击选择您的具体位置。</p>
           
           <input 
             className="w-full p-3 border border-slate-200 rounded-lg mb-3"
@@ -120,11 +129,19 @@ export default function ProviderPage() {
             value={shelterForm.address}
             onChange={e => setShelterForm({...shelterForm, address: e.target.value})}
           />
+
+          <div className="h-64 w-full mb-2 rounded-lg overflow-hidden border border-slate-200 relative z-0">
+            <MapPicker onLocationSelect={(lat, lng) => setSelectedLocation({ lat, lng })} />
+          </div>
+          <p className="text-xs text-slate-500 mb-6">
+            {selectedLocation ? `已选坐标: ${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lng.toFixed(4)}` : '等待选择位置...'}
+          </p>
+
           <button 
             onClick={registerShelter}
             className="w-full bg-green-600 text-white py-3 rounded-lg font-bold"
           >
-            📍 确认上传当前位置
+            📍 确认注册庇护点
           </button>
         </div>
       )}

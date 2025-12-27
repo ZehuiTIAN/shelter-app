@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../utils/supabase.js'
 
+import BackToHome from '../../components/BackToHome'
+
+
 export default function SeekerPage() {
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -60,6 +63,7 @@ export default function SeekerPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 p-4 pb-20">
+      <BackToHome />
       <h1 className="text-2xl font-bold text-slate-800 mb-6">寻求帮助</h1>
 
       {/* 模块 A: 漂流瓶 */}

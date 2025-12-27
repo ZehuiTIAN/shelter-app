@@ -5,45 +5,31 @@ import Link from 'next/link'
 import { supabase } from '../utils/supabase.js' // 确保这个路径对应你刚才建文件的位置
 
 export default function Home() {
-  const [connectionStatus, setConnectionStatus] = useState('Checking...')
   const [user, setUser] = useState<any>(null)
 
-  // 1. 测试连接的逻辑
   useEffect(() => {
-    async function checkSupabase() {
-      // 尝试查询 profiles 表，只要不报错就算连通
-      const { data, error } = await supabase.from('profiles').select('id').limit(1)
-      
-      if (error) {
-        console.error("连接失败:", error)
-        setConnectionStatus('🔴 数据库未连接 (看控制台报错)')
-      } else {
-        setConnectionStatus('🟢 数据库已连接')
-      }
-    }
-    checkSupabase()
-
-    // 检查当前登录用户
+    // 1. 获取当前会话
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
     })
+
+    // 2. 监听登录状态变化 (处理登出/登录跳转)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    setUser(null)
-    alert("已退出登录")
+    // 状态更新由 onAuthStateChange 自动处理
   }
 
   // 2. 页面 UI 渲染
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-slate-50">
       
-      {/* 状态栏 (测试用) */}
-      <div className="absolute top-4 right-4 text-sm font-mono">
-        {connectionStatus}
-      </div>
-
       <h1 className="text-4xl font-bold mb-8 text-slate-800">Shelter Guard</h1>
       <p className="mb-12 text-slate-500 text-center max-w-md">
         安全、隐秘的家暴庇护网络。您的位置只有在发出求助时才会被共享。

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '../../utils/supabase.js'
 
+import BackToHome from '../../components/BackToHome'
+
 // 动态导入地图组件，禁用 SSR (服务端渲染)
 const MapPicker = dynamic(() => import('../../components/MapPicker'), { 
   ssr: false,
@@ -79,6 +81,7 @@ export default function ProviderPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 p-4">
+      <BackToHome />
       <div className="flex gap-4 mb-6">
         <button 
           onClick={() => setActiveTab('mental')}

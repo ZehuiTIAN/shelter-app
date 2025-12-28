@@ -17,7 +17,7 @@ export default function SeekerPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('bottles')
       .select(`
         *,
@@ -32,6 +32,11 @@ export default function SeekerPage() {
       .order('created_at', { ascending: false })
     
     if (data) setMyBottles(data)
+    if (error) {
+      console.error('获取求助信箱失败:', error)
+    } else if (data) {
+      setMyBottles(data)
+    }
   }
 
   // 1. 发送漂流瓶逻辑
@@ -147,6 +152,15 @@ export default function SeekerPage() {
       {/* 模块 C: 我的求助信箱 (显示回复) */}
       <section className="bg-white p-4 rounded-xl shadow-sm mb-6">
         <h2 className="text-lg font-semibold mb-4 text-slate-800">📬 我的求助信箱</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-slate-800">📬 我的求助信箱</h2>
+          <button 
+            onClick={fetchMyBottles}
+            className="text-sm px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
+          >
+            🔄 刷新消息
+          </button>
+        </div>
         {myBottles.length === 0 ? (
           <p className="text-slate-400 text-sm">暂无求助记录</p>
         ) : (
